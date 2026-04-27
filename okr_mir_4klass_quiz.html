@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>История России · 4 класс · 40 вопросов</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#F5F0FA;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:1rem}
+.wrap{max-width:600px;width:100%}
+.card{border-radius:18px;overflow:hidden;border:1px solid #D7BDE2;position:relative;box-shadow:0 4px 24px rgba(125,60,152,.15)}
+canvas#fx{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:20}
+.pop{position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);z-index:15;pointer-events:none;opacity:0;text-align:center;font-weight:700;min-width:180px}
+.pop.ok-anim{animation:popUp .85s ease-out forwards}
+.pop.fail-anim{animation:popFd .7s ease-out forwards}
+.pop.multi-anim{animation:popUp 1s ease-out forwards}
+.pop-big{font-size:28px;line-height:1.1;text-shadow:0 2px 8px rgba(0,0,0,.18)}
+.pop-sm{font-size:14px;margin-top:3px}
+@keyframes popUp{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}25%{opacity:1;transform:translate(-50%,-50%) scale(1.2)}65%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-80%)}}
+@keyframes popFd{0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}30%{opacity:1;transform:translate(-50%,-50%) scale(1)}75%{opacity:1}100%{opacity:0}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+.card.shake-anim{animation:shake .4s ease}
+.hdr{background:linear-gradient(135deg,#4A235A,#7D3C98);padding:.85rem 1.1rem;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.hdr-title{font-size:11px;font-weight:700;color:#E8DAEF;letter-spacing:.8px;text-transform:uppercase}
+.hdr-pills{display:flex;gap:7px;align-items:center}
+.lives{display:flex;gap:3px}
+.hrt{font-size:15px;transition:all .3s}
+.hrt.gone{opacity:.15;transform:scale(.6)}
+.streak-pill{font-size:11px;font-weight:600;padding:3px 9px;border-radius:12px;background:rgba(255,255,255,.15);color:#ABEBC6;white-space:nowrap;transition:opacity .3s}
+.streak-pill.hidden{opacity:0}
+.score-pill{font-size:14px;font-weight:700;color:#F9E79F;min-width:60px;text-align:right;transition:transform .15s}
+.score-pill.bump{transform:scale(1.38)}
+.prog-bar-wrap{background:#3d2050;padding:0 1.1rem .5rem;display:flex;align-items:center;gap:8px}
+.prog-bg{flex:1;height:5px;background:rgba(255,255,255,.2);border-radius:3px;overflow:hidden}
+.prog-fill{height:5px;background:#A9DFBF;border-radius:3px;transition:width .4s ease}
+.prog-lbl{font-size:10px;color:#C39BD3;min-width:30px;text-align:right}
+.sub{padding:.42rem 1.1rem;display:flex;align-items:center;justify-content:space-between;background:#fff}
+.theme-tag{font-size:11px;font-weight:700;padding:3px 10px;border-radius:6px}
+.qnum{font-size:11px;color:#666}
+.dots{display:flex;gap:3px;flex-wrap:wrap;background:#fff;padding:.35rem 1.1rem .15rem}
+.dot{width:9px;height:9px;border-radius:50%;background:#EDE7F6;border:.5px solid #C39BD3;transition:all .25s}
+.dot.cur{background:#7D3C98;border-color:#7D3C98;transform:scale(1.4)}
+.dot.ok{background:#27AE60;border-color:#27AE60}
+.dot.fail{background:#E74C3C;border-color:#E74C3C}
+.timer-row{background:#fff;padding:.5rem 1.1rem 0;display:flex;align-items:center;gap:10px}
+.tbar-bg{flex:1;height:6px;background:#F4ECF7;border-radius:4px;overflow:hidden}
+.tbar{height:6px;border-radius:4px;transition:width .1s linear,background .5s}
+.tnum{font-size:12px;font-weight:600;min-width:22px;text-align:right;color:#888}
+.body{background:#fff;padding:.8rem 1.1rem .95rem}
+.year-badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;background:#EDE7F6;color:#4A235A;margin-bottom:.45rem}
+.qtxt{font-size:15px;font-weight:500;color:#222;line-height:1.55;margin-bottom:.9rem;min-height:44px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.obtn{display:flex;align-items:center;gap:9px;border-radius:10px;padding:.6rem .8rem;font-size:12.5px;cursor:pointer;text-align:left;width:100%;line-height:1.4;font-weight:500;border:2px solid transparent;transition:transform .12s,filter .15s}
+.obtn:hover:not(:disabled){transform:scale(1.04);filter:brightness(1.07)}
+.obtn:disabled{cursor:default}
+.oa{background:#F4ECF7;color:#4A235A}
+.ob{background:#E8F8F5;color:#0E6655}
+.oc{background:#FEF9E7;color:#7D6608}
+.od{background:#FDEDEC;color:#922B21}
+.obtn.correct{border-color:#27AE60;background:#D5F5E3;color:#1E8449;transform:scale(1.03)}
+.obtn.wrong{border-color:#E74C3C;background:#FDEDEC;color:#922B21;opacity:.9}
+.obtn.timeout-mark{border-color:#E67E22;background:#FDEBD0;color:#784212}
+.lbl{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;background:rgba(0,0,0,.1)}
+.bot{background:#F9F3FF;border-top:1px solid #E8DAEF;padding:.6rem 1.1rem;min-height:44px;display:flex;gap:10px;align-items:center}
+.fact{font-size:12px;color:#555;flex:1;line-height:1.5}
+.fact.ok{color:#1E8449;font-weight:500}
+.fact.fail{color:#922B21;font-weight:500}
+.fact.tout{color:#784212;font-weight:500}
+.nxbtn{padding:.45rem 1rem;font-size:12.5px;font-weight:600;border-radius:8px;border:none;color:#fff;background:#7D3C98;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.nxbtn:hover{background:#4A235A}
+.res{background:#fff;padding:1.5rem 1.2rem;text-align:center}
+.res-emoji{font-size:40px;margin-bottom:.35rem}
+.res-score{font-size:50px;font-weight:700;color:#7D3C98;line-height:1}
+.res-lbl{font-size:14px;color:#888}
+.res-stars{font-size:1.8rem;letter-spacing:3px;color:#D4AC0D;margin:.35rem 0}
+.res-msg{font-size:14px;color:#333;margin:.6rem 0 .9rem;line-height:1.5}
+.res-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:1.1rem}
+.rs{background:#F4ECF7;border-radius:9px;padding:.5rem}
+.rs-n{font-size:20px;font-weight:700;color:#333}
+.rs-l{font-size:10px;color:#888}
+.theme-scores{margin:.8rem 0 1rem;text-align:left}
+.ts-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px}
+.ts-name{flex:1;color:#555}
+.ts-bar-bg{width:110px;height:6px;background:#EDE7F6;border-radius:3px;overflow:hidden;flex-shrink:0}
+.ts-bar{height:6px;border-radius:3px;transition:width .5s ease}
+.ts-pct{min-width:34px;text-align:right;font-weight:600;color:#333;font-size:11px}
+.rbtn{padding:.6rem 2rem;font-size:14px;font-weight:600;border-radius:9px;border:none;color:#fff;background:#27AE60;cursor:pointer}
+.rbtn:hover{background:#1E8449}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="card" id="card">
+<canvas id="fx"></canvas>
+<div class="pop" id="pop"><div class="pop-big" id="popBig"></div><div class="pop-sm" id="popSm"></div></div>
+
+<div class="hdr">
+  <div class="hdr-title">🏛️ История России · 4 класс · 40 вопросов</div>
+  <div class="hdr-pills">
+    <div class="lives" id="lives"></div>
+    <div class="streak-pill hidden" id="streak"></div>
+    <div class="score-pill" id="score">⭐ 0</div>
+  </div>
+</div>
+<div class="prog-bar-wrap">
+  <div class="prog-bg"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+  <div class="prog-lbl" id="progLbl">0 / 40</div>
+</div>
+
+<div class="sub" id="sub">
+  <span class="theme-tag" id="ttag"></span>
+  <span class="qnum" id="qnum"></span>
+</div>
+
+<div id="game">
+  <div class="dots" id="dots"></div>
+  <div class="timer-row">
+    <div class="tbar-bg"><div class="tbar" id="tbar" style="width:100%;background:#27AE60"></div></div>
+    <div class="tnum" id="tnum">15</div>
+  </div>
+  <div class="body">
+    <div class="year-badge" id="ybadge"></div>
+    <div class="qtxt" id="qtxt"></div>
+    <div class="opts" id="opts"></div>
+  </div>
+  <div class="bot" id="bot" style="display:none">
+    <div class="fact" id="fact"></div>
+    <button class="nxbtn" id="nxbtn" onclick="nextQ()">Дальше →</button>
+  </div>
+</div>
+
+<div id="res" style="display:none"></div>
+</div>
+</div>
+
+<script>
+const THEMES=[
+  {name:"⚔️ Война 1812 года",bg:"#FDEDEC",col:"#7B241C"},
+  {name:"📜 XIX век",bg:"#EDE7F6",col:"#4A235A"},
+  {name:"🏭 Россия в XX веке",bg:"#E8F8F5",col:"#0E6655"},
+  {name:"🔨 1920–1930-е годы",bg:"#FEF9E7",col:"#7D6608"},
+  {name:"🎖️ Великая Отечественная",bg:"#FDEDEC",col:"#922B21"},
+  {name:"🚀 Путь в космос",bg:"#EDE7F6",col:"#1A5276"}
+];
+
+const QS=[
+  // ===== ВОЙНА 1812 =====
+  {t:0,y:"Июнь 1812",q:"Кто в июне 1812 года вторгся в Россию?",opts:["Карл XII","Наполеон Бонапарт","Фридрих II","Людовик XVI"],c:1,f:"Наполеон завоевал почти всю Европу — Россия осталась один на один с грозным противником."},
+  {t:0,y:"Август 1812",q:"У какого села в 110 км от Москвы произошла главная битва 1812 года?",opts:["Куликово","Бородино","Полтава","Прохоровка"],c:1,f:"Бородинская битва 26 августа 1812 года — одно из крупнейших сражений в мировой истории."},
+  {t:0,y:"1812",q:"Кого назначили главнокомандующим русской армией в трудный час?",opts:["Суворова","Ушакова","Кутузова","Давыдова"],c:2,f:"Михаил Илларионович Кутузов принял нелёгкое решение: отступить и сохранить армию, чтобы потом победить."},
+  {t:0,y:"1812",q:"Что сделал Кутузов после Бородинского сражения?",opts:["Пошёл в атаку","Сдал Москву и отступил","Запросил мира","Отступил к Петербургу"],c:1,f:"Кутузов принял тяжёлое, но верное решение: сберечь армию важнее, чем оборонять Москву."},
+  {t:0,y:"1812",q:"Денис Васильевич Давыдов командовал...",opts:["Морским флотом","Партизанским отрядом","Главной артиллерией","Гвардией императора"],c:1,f:"Давыдов был не только блестящим офицером, но и талантливым поэтом — настоящий герой своего времени!"},
+  {t:0,y:"Декабрь 1812",q:"Когда французские захватчики были окончательно изгнаны из России?",opts:["В августе 1812","В октябре 1812","В декабре 1812","В феврале 1813"],c:2,f:"В декабре 1812 года захватчики были изгнаны. А в 1814 году русская армия дошла до самого Парижа!"},
+  {t:0,y:"XIX век",q:"Какой храм возвели в Москве в конце XIX века в память победы над Наполеоном?",opts:["Покровский собор","Храм Христа Спасителя","Исаакиевский собор","Казанский собор"],c:1,f:"Храм Христа Спасителя — величественный памятник воинской славе. В советское время он был разрушен, но в 1990-е годы восстановлен."},
+  // ===== XIX ВЕК =====
+  {t:1,y:"14 декабря 1825",q:"На какой площади в Петербурге выступили декабристы?",opts:["Дворцовой","Сенатской","Красной","Марсовом поле"],c:1,f:"14 декабря 1825 года — именно в декабре, поэтому участников восстания назвали декабристами."},
+  {t:1,y:"1825",q:"Кем были декабристы по своему происхождению?",opts:["Крестьянами","Купцами","Молодыми офицерами-дворянами","Рабочими фабрик"],c:2,f:"Молодые решительные офицеры-дворяне, участники войны 1812 года, мечтали о свободной России без крепостничества."},
+  {t:1,y:"1861",q:"В каком году Александр II подписал Манифест об освобождении крестьян?",opts:["1825","1837","1861","1881"],c:2,f:"В 1861 году все жители России обрели личную свободу. Велико было значение этого события!"},
+  {t:1,y:"1861",q:"Что получили крепостные крестьяне по Манифесту 1861 года?",opts:["Собственные земли","Личную свободу","Право голосовать","Деньги от государства"],c:1,f:"Крестьяне обрели личную свободу. Хотя разная судьба по-прежнему ожидала детей богатого помещика и бывшего крепостного."},
+  {t:1,y:"1837",q:"Между какими городами прошла первая железная дорога в России?",opts:["Москва–Тула","Москва–Нижний Новгород","Петербург–Царское Село","Петербург–Москва"],c:2,f:"Первая дорога (1837 г.) была совсем короткой — 27 км. А в 1851 году открылось сообщение между Петербургом и Москвой."},
+  {t:1,y:"XIX–XX вв.",q:"Какое техническое новшество появилось на улицах Москвы и Петербурга в конце XIX — начале XX века?",opts:["Самолёт","Метро","Трамвай","Автобус"],c:2,f:"Сначала появилась конка — конная железная дорога, а затем электрический трамвай. Не редкостью стали лифты и телефоны!"},
+  {t:1,y:"Конец XIX в.",q:"Как называлась великая железная дорога через всю Сибирь?",opts:["Великий шёлковый путь","Транссибирская магистраль","Байкало-Амурская магистраль","Среднесибирская дорога"],c:1,f:"Транссибирскую магистраль ещё называют Великой Сибирской магистралью. Она связала центр страны с Сибирью и Дальним Востоком."},
+  // ===== РОССИЯ В XX ВЕКЕ =====
+  {t:2,y:"С 1894 г.",q:"Как звали последнего российского императора?",opts:["Александр III","Николай I","Николай II","Александр II"],c:2,f:"Николай Второй вступил на престол в 1894 году. Он хотел передать трон сыну Алексею, но история распорядилась иначе."},
+  {t:2,y:"С 1894 г.",q:"Как называли группы людей, предлагавших свои программы переустройства страны?",opts:["Советы","Партии","Думы","Коллегии"],c:1,f:"В начале XX века возникло много политических партий. Одна из них — большевики во главе с Лениным — призывала к революции."},
+  {t:2,y:"1914–1918",q:"В каком году началась Первая мировая война?",opts:["1904","1912","1914","1917"],c:2,f:"Первая мировая война (1914–1918) вовлекла многие государства. Главным противником России была Германия."},
+  {t:2,y:"1914",q:"Какой лётчик в августе 1914 года впервые в истории совершил воздушный таран?",opts:["Чкалов","Давыдов","Нестеров","Брусилов"],c:2,f:"Пётр Нестеров придумал «мёртвую петлю» — элемент высшего пилотажа. Он вошёл в историю как первый воздушный таран."},
+  {t:2,y:"Февраль 1917",q:"Что произошло в феврале 1917 года в Петрограде?",opts:["Началась Первая мировая война","Рабочие вышли на улицы — революция","Образовался СССР","Закончилась Гражданская война"],c:1,f:"В феврале 1917 года рабочие несли лозунги: «Долой войну!», «Долой голод!», «Долой царизм!» — и армия перешла на их сторону."},
+  {t:2,y:"Март 1917",q:"Что произошло с Николаем II в марте 1917 года?",opts:["Он бежал за границу","Он был арестован большевиками","Он отрёкся от престола","Он стал главой правительства"],c:2,f:"В марте 1917 года последний российский император был вынужден отречься от престола. Царская власть пала."},
+  {t:2,y:"Октябрь 1917",q:"Какая партия пришла к власти в октябре 1917 года?",opts:["Меньшевики","Большевики","Кадеты","Эсеры"],c:1,f:"25 октября 1917 года большевики взяли власть. Во главе Совета народных комиссаров встал В. И. Ленин."},
+  {t:2,y:"1917–1922",q:"Кого в Гражданской войне называли «красными», а кого «белыми»?",opts:["Красные — за царя, белые — за народ","Красные — сторонники большевиков, белые — их противники","Красные — крестьяне, белые — дворяне","Красные — рабочие, белые — военные"],c:1,f:"Гражданская война — это вооружённая борьба за власть. И красные, и белые считали, что борются за правое дело."},
+  // ===== 1920–1930-е =====
+  {t:3,y:"1918",q:"Какой город стал столицей советского государства с 1918 года?",opts:["Петроград","Киев","Москва","Нижний Новгород"],c:2,f:"С 1918 года столицей стала Москва. До этого столицей был Петроград (бывший Петербург)."},
+  {t:3,y:"1922",q:"В каком году было образовано государство СССР?",opts:["1917","1920","1922","1925"],c:2,f:"В 1922 году на карте мира появилось новое государство — Союз Советских Социалистических Республик."},
+  {t:3,y:"1922",q:"Сколько союзных республик объединял СССР?",opts:["10","12","15","20"],c:2,f:"15 республик от России и Украины до Армении, Азербайджана и Туркмении — вот что такое СССР."},
+  {t:3,y:"1920-е",q:"Большевиков позже стали называть...",opts:["Меньшевиками","Эсерами","Коммунистами","Кадетами"],c:2,f:"Большевики — коммунисты. Другие политические партии в советской стране были запрещены."},
+  {t:3,y:"1930-е",q:"Какой из этих городов был построен в 1930-е годы почти с нуля?",opts:["Омск","Иркутск","Магнитогорск","Красноярск"],c:2,f:"Магнитогорск, Комсомольск-на-Амуре, Норильск — новые города 1930-х. СССР напоминал тогда гигантскую стройку!"},
+  {t:3,y:"1930-е",q:"Как называли коллективные хозяйства, в которые объединяли крестьян?",opts:["Артели","Колхозы","Совхозы","Коммуны"],c:1,f:"Крестьян «учили хозяйствовать по-новому» — объединяться в колхозы и трудиться коллективно на общей земле."},
+  {t:3,y:"1930-е",q:"Что появилось в Москве в 1930-е годы и до сих пор восхищает красотой своих станций?",opts:["Трамвай","Монорельс","Метро","Скоростной трамвай"],c:2,f:"Московское метро — гордость страны! Станции «Комсомольская», «Маяковская» называют «подземными дворцами»."},
+  // ===== ВЕЛИКАЯ ОТЕЧЕСТВЕННАЯ =====
+  {t:4,y:"1 сентября 1939",q:"Когда началась Вторая мировая война?",opts:["1 января 1939","1 сентября 1939","22 июня 1941","7 ноября 1941"],c:1,f:"В 1939 году фашистская Германия начала захват стран Европы. Через два года она напала на СССР."},
+  {t:4,y:"22 июня 1941",q:"Когда началась Великая Отечественная война?",opts:["1 сентября 1939","7 ноября 1941","22 июня 1941","1 мая 1942"],c:2,f:"22 июня 1941 года — без объявления войны, ранним утром. Вражеская авиация нанесла удары по аэродромам и городам."},
+  {t:4,y:"Лето 1941",q:"Какая крепость героически сопротивлялась врагу больше месяца в самом начале войны?",opts:["Кронштадт","Измаильская","Псковская","Брестская"],c:3,f:"На стене Брестской крепости осталась надпись: «Я умираю, но не сдаюсь. Прощай, Родина!» — символ несгибаемого мужества."},
+  {t:4,y:"Август 1941",q:"Какой подвиг совершил лётчик Виктор Талалихин в ночном небе над Москвой?",opts:["Первым совершил петлю Нестерова","Провёл воздушную разведку","Таранил вражеский самолёт","Сбил 10 самолётов за один бой"],c:2,f:"В августе 1941 года Талалихин направил свой самолёт на вражеский и уничтожил его тараном — бесстрашный подвиг!"},
+  {t:4,y:"1941–1944",q:"Сколько дней длилась блокада Ленинграда?",opts:["300 дней","500 дней","750 дней","900 дней"],c:3,f:"Почти 900 дней. В ноябре–декабре 1941 года норма хлеба на человека в день была лишь 125 граммов."},
+  {t:4,y:"1941–1944",q:"По какому пути доставляли грузы в осаждённый Ленинград?",opts:["Через Финляндию","По Дороге жизни через Ладожское озеро","По железной дороге","Самолётами"],c:1,f:"Дорога жизни по льду Ладожского озера — единственный путь, связывавший Ленинград с остальной страной."},
+  {t:4,y:"1941–1942",q:"Какая юная разведчица была казнена фашистами в Подмосковье и не выдала военную тайну?",opts:["Зина Портнова","Лёня Голиков","Зоя Космодемьянская","Валя Котик"],c:2,f:"Зоя Космодемьянская — первая женщина, удостоенная звания Героя Советского Союза в годы войны. Ей было 18 лет."},
+  {t:4,y:"Сталинград 1942–43",q:"Что стало символом героизма в Сталинграде — дом, который оборонялся 58 дней?",opts:["Дом Щорса","Дом Давыдова","Дом Павлова","Дом Жукова"],c:2,f:"Дом Павлова держался 58 дней! Бои шли за каждый квартал, улицу и дом Сталинграда."},
+  {t:4,y:"Июль–август 1943",q:"Какое грандиозное танковое сражение произошло под Прохоровкой в 1943 году?",opts:["Сталинградская битва","Курская битва","Московская битва","Ленинградская битва"],c:1,f:"12 июля 1943 года под Прохоровкой — крупнейшее танковое сражение Второй мировой. После него враг был отброшен назад."},
+  {t:4,y:"Апрель–май 1945",q:"Кто руководил штурмом Берлина в апреле 1945 года?",opts:["Суворов","Кутузов","Рокоссовский","Жуков"],c:3,f:"Маршал Георгий Константинович Жуков — выдающийся полководец. Красное знамя Победы было поднято над рейхстагом."},
+  {t:4,y:"9 мая 1945",q:"Сколько людей потеряла наша страна в Великой Отечественной войне?",opts:["5 миллионов","10 миллионов","Около 20 миллионов","Почти 27 миллионов"],c:3,f:"Почти 27 миллионов человек — огромная цена Победы. Поэтому 9 мая — священная дата для каждой российской семьи."},
+  // ===== КОСМОС =====
+  {t:5,y:"4 октября 1957",q:"Что СССР запустил на орбиту Земли 4 октября 1957 года?",opts:["Ракету с собакой","Первый искусственный спутник Земли","Пилотируемый корабль","Космическую станцию"],c:1,f:"Первый искусственный спутник — небольшой металлический шар. Весь мир следил за ним с изумлением!"},
+  {t:5,y:"12 апреля 1961",q:"На каком космическом корабле Гагарин совершил первый полёт в космос?",opts:["«Союз»","«Мир»","«Восток»","«Буран»"],c:2,f:"Корабль «Восток» — и Юрий Гагарин в нём. 108 минут на орбите изменили историю человечества навсегда!"},
+  {t:5,y:"12 апреля 1961",q:"Сколько минут длился первый полёт Юрия Гагарина в космос?",opts:["45 минут","60 минут","90 минут","108 минут"],c:3,f:"108 минут — и весь мир узнал имя советского космонавта. 12 апреля стал Днём космонавтики."},
+  {t:5,y:"1986",q:"Как называлась советская космическая станция, выведенная на орбиту в 1986 году?",opts:["«Восток»","«Союз»","«Мир»","«Буран»"],c:2,f:"Станция «Мир» позволила людям жить и работать в космосе долгими месяцами. Длительные путешествия стали реальностью!"}
+];
+
+const LBLS=["А","Б","В","Г"],LCLS=["oa","ob","oc","od"];
+const TIME=15,BASE=100,SPEED_MAX=50;
+let cur=0,score=0,streak=0,maxStreak=0,corCount=0,lives=5,answered=false,tid=null,tLeft=TIME,confAF=null;
+let themeStats={};
+THEMES.forEach((_,i)=>themeStats[i]={ok:0,total:0});
+QS.forEach(q=>themeStats[q.t].total++);
+
+function getM(){return streak>=6?3:streak>=4?2:streak>=2?1.5:1}
+function prevM(){const s=streak-1;return s>=6?3:s>=4?2:s>=2?1.5:1}
+
+function buildLives(){
+  const b=document.getElementById('lives');b.innerHTML='';
+  for(let i=0;i<5;i++){const h=document.createElement('span');h.className='hrt'+(i>=lives?' gone':'');h.id='hrt'+i;h.textContent='💜';b.appendChild(h);}
+}
+function buildDots(){
+  const d=document.getElementById('dots');d.innerHTML='';
+  QS.forEach((_,i)=>{const s=document.createElement('div');s.className='dot'+(i===0?' cur':'');s.id='d'+i;d.appendChild(s);});
+}
+function setDot(i,cls){
+  const d=document.getElementById('d'+i);if(d)d.className='dot '+cls;
+  if(i+1<QS.length){const n=document.getElementById('d'+(i+1));if(n)n.className='dot cur';}
+}
+function updateProg(){
+  const pct=Math.round((cur/QS.length)*100);
+  document.getElementById('progFill').style.width=pct+'%';
+  document.getElementById('progLbl').textContent=cur+' / '+QS.length;
+}
+function loadQ(){
+  answered=false;tLeft=TIME;updateProg();
+  const q=QS[cur],th=THEMES[q.t];
+  const tt=document.getElementById('ttag');
+  tt.textContent=th.name;tt.style.background=th.bg;tt.style.color=th.col;
+  document.getElementById('qnum').textContent='Вопрос '+(cur+1)+' / '+QS.length;
+  document.getElementById('ybadge').textContent='📅 '+q.y;
+  document.getElementById('qtxt').textContent=q.q;
+  const og=document.getElementById('opts');og.innerHTML='';
+  q.opts.forEach((o,i)=>{
+    const b=document.createElement('button');
+    b.className='obtn '+LCLS[i];
+    b.innerHTML='<span class="lbl">'+LBLS[i]+'</span><span>'+o+'</span>';
+    b.onclick=()=>doAns(i);og.appendChild(b);
+  });
+  document.getElementById('bot').style.display='none';
+  updateTimerUI();startTimer();
+}
+function startTimer(){
+  clearInterval(tid);updateTimerUI();
+  tid=setInterval(()=>{tLeft--;updateTimerUI();if(tLeft<=0){clearInterval(tid);onTimeout();}},1000);
+}
+function updateTimerUI(){
+  const pct=(tLeft/TIME)*100;
+  const tb=document.getElementById('tbar');
+  tb.style.width=pct+'%';
+  tb.style.background=tLeft>8?'#27AE60':tLeft>4?'#E67E22':'#E74C3C';
+  document.getElementById('tnum').textContent=tLeft;
+}
+function onTimeout(){
+  if(answered)return;answered=true;
+  const btns=document.querySelectorAll('.obtn');btns.forEach(b=>b.disabled=true);
+  btns[QS[cur].c].classList.add('timeout-mark');
+  loseLife();streak=0;updateStreak();setDot(cur,'fail');
+  showBot('Время вышло! Правильный ответ выделен.','tout',QS[cur].f);
+}
+function doAns(idx){
+  if(answered)return;answered=true;clearInterval(tid);
+  const q=QS[cur];
+  const btns=document.querySelectorAll('.obtn');btns.forEach(b=>b.disabled=true);
+  if(idx===q.c){
+    corCount++;themeStats[q.t].ok++;
+    const m=getM();streak++;if(streak>maxStreak)maxStreak=streak;
+    const spd=Math.round((tLeft/TIME)*SPEED_MAX);
+    const pts=Math.round((BASE+spd)*m);score+=pts;
+    btns[idx].classList.add('correct');setDot(cur,'ok');
+    updateScore(true);
+    const nm=getM();
+    if(nm>prevM()&&streak>1){
+      showPop('multi-anim',nm===3?'🔥 СЕРИЯ x3!':nm===2?'🔥 СЕРИЯ x2!':'🔥 x1.5!','Бонус активен!','#D4AC0D');
+    } else {
+      const msgs=['Верно! 🎉','Отлично! 🌟','Молодец! ⭐','Историк! 🏆','Правильно! ✅'];
+      showPop('ok-anim',msgs[Math.floor(Math.random()*msgs.length)],'+'+pts+' очков','#1E8449');
+    }
+    updateStreak();confetti();showBot('','ok',q.f);
+  } else {
+    btns[idx].classList.add('wrong');btns[q.c].classList.add('correct');
+    streak=0;updateStreak();loseLife();setDot(cur,'fail');
+    shakeCard();
+    showPop('fail-anim','Не угадал 😬','Смотри правильный ответ','#E74C3C');
+    showBot('Неверно. ','fail',q.f);
+  }
+  document.getElementById('nxbtn').textContent=cur===QS.length-1?'Итоги 🏁':'Дальше →';
+}
+function showBot(pre,cls,fact){
+  const f=document.getElementById('fact');
+  f.innerHTML='<b>'+pre+'</b>'+fact;f.className='fact '+cls;
+  document.getElementById('bot').style.display='flex';
+}
+function loseLife(){
+  if(lives>0){lives--;const h=document.getElementById('hrt'+lives);if(h)h.className='hrt gone';}
+}
+function updateScore(bump){
+  const p=document.getElementById('score');p.textContent='⭐ '+score;
+  if(bump){p.classList.add('bump');setTimeout(()=>p.classList.remove('bump'),250);}
+}
+function updateStreak(){
+  const sb=document.getElementById('streak');
+  if(streak>=2){sb.textContent='🔥 '+streak+' подряд';sb.classList.remove('hidden');}
+  else sb.classList.add('hidden');
+}
+function showPop(anim,big,sm,col){
+  const el=document.getElementById('pop');
+  el.className='pop';void el.offsetWidth;
+  document.getElementById('popBig').textContent=big;document.getElementById('popBig').style.color=col;
+  document.getElementById('popSm').textContent=sm;document.getElementById('popSm').style.color=col;
+  el.className='pop '+anim;
+}
+function shakeCard(){const c=document.getElementById('card');c.classList.remove('shake-anim');void c.offsetWidth;c.classList.add('shake-anim');}
+function confetti(){
+  const cvs=document.getElementById('fx'),card=document.getElementById('card');
+  cvs.width=card.offsetWidth;cvs.height=card.offsetHeight;
+  const ctx=cvs.getContext('2d');
+  const cols=['#7D3C98','#27AE60','#D4AC0D','#E74C3C','#2980B9','#F39C12','#1ABC9C'];
+  const ps=[];
+  for(let i=0;i<55;i++)ps.push({x:Math.random()*cvs.width,y:-8,w:5+Math.random()*7,h:3+Math.random()*4,col:cols[Math.floor(Math.random()*cols.length)],vx:(Math.random()-.5)*5.5,vy:1.5+Math.random()*4,rot:Math.random()*360,vr:(Math.random()-.5)*13});
+  if(confAF)cancelAnimationFrame(confAF);
+  function draw(){
+    ctx.clearRect(0,0,cvs.width,cvs.height);let alive=false;
+    ps.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.rot+=p.vr;p.vy+=.14;
+      if(p.y<cvs.height+20)alive=true;
+      const a=Math.max(0,1.2-(p.y/cvs.height)*1.5);
+      ctx.save();ctx.globalAlpha=a;ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);
+      ctx.fillStyle=p.col;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();
+    });
+    if(alive)confAF=requestAnimationFrame(draw);
+    else ctx.clearRect(0,0,cvs.width,cvs.height);
+  }draw();
+}
+function nextQ(){cur++;if(cur>=QS.length)showRes();else loadQ();}
+function showRes(){
+  clearInterval(tid);
+  document.getElementById('game').style.display='none';
+  document.getElementById('sub').style.display='none';
+  document.getElementById('progFill').style.width='100%';
+  document.getElementById('progLbl').textContent='40 / 40';
+  const pct=Math.round(corCount/QS.length*100);
+  const sc=Math.min(5,Math.ceil(pct/20));
+  const stars='⭐'.repeat(sc)+'☆'.repeat(5-sc);
+  let emoji,title,msg;
+  if(pct>=90){emoji='🏆';title='Ты — историк-легенда!';msg='Превосходно! Контрольная будет лёгкой — ты знаешь все даты и события.';}
+  else if(pct>=75){emoji='🌟';title='Отличный результат!';msg='Молодец! Повтори темы, где были ошибки — и будет идеально.';}
+  else if(pct>=55){emoji='👍';title='Хороший старт!';msg='Неплохо. Особое внимание — слабым темам на шкале ниже.';}
+  else{emoji='📖';title='Ещё раз — и всё получится!';msg='Перечитай учебник, запомни даты — и попробуй снова!';}
+  let tsHTML='<div class="theme-scores">';
+  THEMES.forEach((th,i)=>{
+    const st=themeStats[i];
+    const p=st.total>0?Math.round((st.ok/st.total)*100):0;
+    const barCol=p>=80?'#27AE60':p>=50?'#E67E22':'#E74C3C';
+    tsHTML+='<div class="ts-row"><span class="ts-name">'+th.name+'</span><div class="ts-bar-bg"><div class="ts-bar" style="width:'+p+'%;background:'+barCol+'"></div></div><span class="ts-pct">'+st.ok+'/'+st.total+'</span></div>';
+  });
+  tsHTML+='</div>';
+  document.getElementById('res').innerHTML='<div class="res"><div class="res-emoji">'+emoji+'</div><div class="res-score">'+score+'</div><div class="res-lbl">очков набрано</div><div class="res-stars">'+stars+'</div><div style="font-size:15px;font-weight:700;color:#333;margin:.25rem 0">'+title+'</div><div class="res-grid" style="margin-top:.7rem"><div class="rs"><div class="rs-n">'+corCount+'/'+QS.length+'</div><div class="rs-l">правильных</div></div><div class="rs"><div class="rs-n">'+pct+'%</div><div class="rs-l">точность</div></div><div class="rs"><div class="rs-n">'+maxStreak+'</div><div class="rs-l">серия</div></div><div class="rs"><div class="rs-n">'+score+'</div><div class="rs-l">очков</div></div></div>'+tsHTML+'<div class="res-msg">'+msg+'</div><button class="rbtn" onclick="restart()">Пройти ещё раз 🔄</button></div>';
+  document.getElementById('res').style.display='block';
+  if(pct>=70)confetti();
+}
+function restart(){
+  cur=0;score=0;streak=0;maxStreak=0;corCount=0;lives=5;answered=false;
+  THEMES.forEach((_,i)=>themeStats[i]={ok:0,total:0});
+  QS.forEach(q=>themeStats[q.t].total++);
+  document.getElementById('score').textContent='⭐ 0';
+  document.getElementById('streak').classList.add('hidden');
+  document.getElementById('res').style.display='none';
+  document.getElementById('sub').style.display='flex';
+  document.getElementById('game').style.display='block';
+  buildLives();buildDots();loadQ();
+}
+buildLives();buildDots();loadQ();
+</script>
+</body>
+</html>
